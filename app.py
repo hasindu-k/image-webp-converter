@@ -28,9 +28,10 @@ class ImageConverterApp(ctk.CTk):
 
         self.input_folder = tk.StringVar()
         self.output_folder = tk.StringVar()
+        self.use_output_folder_value = tk.BooleanVar(value=False)
         self.width_value = tk.StringVar(value="800")
         self.quality_value = tk.StringVar(value="70")
-        self.suffix_value = tk.StringVar(value="medium")
+        self.suffix_value = tk.StringVar(value="")
         self.workers_value = tk.StringVar(value="8")
         self.skip_upscale_value = tk.BooleanVar(value=True)
 
@@ -73,15 +74,32 @@ class ImageConverterApp(ctk.CTk):
             folder_frame, text="Browse", width=100, command=self.choose_input_folder
         ).grid(row=0, column=2, padx=14, pady=12)
 
-        ctk.CTkLabel(folder_frame, text="Output Folder").grid(
+        self.output_folder_checkbox = ctk.CTkCheckBox(
+            folder_frame,
+            text="Use a separate output folder",
+            variable=self.use_output_folder_value,
+            command=self.toggle_output_folder,
+        )
+        self.output_folder_checkbox.grid(
             row=1, column=0, padx=14, pady=12, sticky="w"
         )
-        ctk.CTkEntry(folder_frame, textvariable=self.output_folder).grid(
+        self.output_folder_entry = ctk.CTkEntry(
+            folder_frame,
+            textvariable=self.output_folder,
+            placeholder_text="Converted images will be saved in the input folder",
+            state="disabled",
+        )
+        self.output_folder_entry.grid(
             row=1, column=1, padx=8, pady=12, sticky="ew"
         )
-        ctk.CTkButton(
-            folder_frame, text="Browse", width=100, command=self.choose_output_folder
-        ).grid(row=1, column=2, padx=14, pady=12)
+        self.output_folder_button = ctk.CTkButton(
+            folder_frame,
+            text="Browse",
+            width=100,
+            state="disabled",
+            command=self.choose_output_folder,
+        )
+        self.output_folder_button.grid(row=1, column=2, padx=14, pady=12)
 
         settings_frame = ctk.CTkFrame(self)
         settings_frame.grid(row=3, column=0, padx=24, pady=8, sticky="ew")
@@ -173,9 +191,10 @@ class ImageConverterApp(ctk.CTk):
         if folder:
             self.input_folder.set(folder)
 
-            if not self.output_folder.get():
-                default_output = str(Path(folder).parent / "webp_images_NEW")
-                self.output_folder.set(default_output)
+    def toggle_output_folder(self) -> None:
+        state = "normal" if self.use_output_folder_value.get() else "disabled"
+        self.output_folder_entry.configure(state=state)
+        self.output_folder_button.configure(state=state)
 
     def choose_output_folder(self) -> None:
         folder = filedialog.askdirectory(title="Select output folder")
@@ -183,16 +202,25 @@ class ImageConverterApp(ctk.CTk):
             self.output_folder.set(folder)
 
     def validate_inputs(self) -> tuple[Path, Path, int, int, str, int] | None:
-        input_folder = Path(self.input_folder.get().strip())
-        output_folder = Path(self.output_folder.get().strip())
+        input_folder_text = self.input_folder.get().strip()
 
+        if not input_folder_text:
+            messagebox.showerror("Invalid Input", "Please select an input folder.")
+            return None
+
+        input_folder = Path(input_folder_text)
         if not input_folder.exists() or not input_folder.is_dir():
             messagebox.showerror("Invalid Input", "Please select a valid input folder.")
             return None
 
-        if not str(output_folder).strip():
-            messagebox.showerror("Invalid Output", "Please select a valid output folder.")
-            return None
+        if self.use_output_folder_value.get():
+            output_folder_text = self.output_folder.get().strip()
+            if not output_folder_text:
+                messagebox.showerror("Invalid Output", "Please select an output folder.")
+                return None
+            output_folder = Path(output_folder_text)
+        else:
+            output_folder = input_folder
 
         try:
             width = int(self.width_value.get())
@@ -214,7 +242,7 @@ class ImageConverterApp(ctk.CTk):
             messagebox.showerror("Invalid Threads", "Threads must be between 1 and 32.")
             return None
 
-        suffix = self.suffix_value.get().strip() or "medium"
+        suffix = self.suffix_value.get().strip()
 
         return input_folder, output_folder, width, quality, suffix, workers
 
@@ -331,7 +359,10 @@ class ImageConverterApp(ctk.CTk):
             messagebox.showerror("Error", str(message.get("message", "")))
 
     def open_output_folder(self) -> None:
-        folder = self.output_folder.get().strip()
+        if self.use_output_folder_value.get():
+            folder = self.output_folder.get().strip()
+        else:
+            folder = self.input_folder.get().strip()
 
         if not folder or not Path(folder).exists():
             messagebox.showerror("Folder Not Found", "Output folder does not exist.")

@@ -5,7 +5,8 @@ A simple Windows desktop app to convert JPG, JPEG, and PNG images into WebP form
 ## Features
 
 - Select input folder
-- Select output folder
+- Optionally select a separate output folder
+- Save converted images in the input folder by default
 - Preserve subfolder structure
 - Resize images by width while maintaining aspect ratio
 - Convert to WebP
@@ -40,6 +41,18 @@ Activate it on Windows:
 venv\Scripts\activate
 ```
 
+### Ubuntu/Linux Tkinter Dependency
+
+Tkinter is part of Python's standard GUI bindings, but on Ubuntu/Linux it is
+usually provided as a separate system package. It is not installed with `pip`.
+
+If you are using Python 3.14, install Tkinter with:
+
+```bash
+sudo apt update
+sudo apt install python3-tk
+```
+
 Install dependencies:
 
 ```bash
@@ -51,6 +64,10 @@ Run the app:
 ```bash
 python app.py
 ```
+
+By default, converted images are saved alongside the source images in the input
+folder. Enable **Use a separate output folder** in the app to choose a different
+destination while preserving the input folder's subfolder structure.
 
 ## Build EXE
 

@@ -63,7 +63,8 @@ def convert_single_image(
         output_subfolder = output_folder / relative_parent
         output_subfolder.mkdir(parents=True, exist_ok=True)
 
-        output_name = f"{image_path.stem}-{suffix}.webp"
+        suffix_part = f"-{suffix}" if suffix else ""
+        output_name = f"{image_path.stem}{suffix_part}.webp"
         output_path = output_subfolder / output_name
 
         with Image.open(image_path) as img:
@@ -90,7 +91,7 @@ def convert_images(
     output_folder: str | Path,
     width: int = 800,
     quality: int = 70,
-    suffix: str = "medium",
+    suffix: str = "",
     max_workers: int = 8,
     skip_upscale: bool = True,
     callback: Optional[ProgressCallback] = None,
@@ -116,7 +117,7 @@ def convert_images(
     if max_workers <= 0:
         raise ValueError("Max workers must be greater than 0")
 
-    suffix = suffix.strip() or "medium"
+    suffix = suffix.strip()
     output_path.mkdir(parents=True, exist_ok=True)
 
     images = collect_images(input_path)
