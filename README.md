@@ -69,6 +69,10 @@ By default, converted images are saved alongside the source images in the input
 folder. Enable **Use a separate output folder** in the app to choose a different
 destination while preserving the input folder's subfolder structure.
 
+The initial input folder is `~/Downloads/convert-images`. The app remembers the
+input folder when you browse, begin a conversion, or close the app, then restores
+it the next time the app starts.
+
 ## Build EXE
 
 Run:

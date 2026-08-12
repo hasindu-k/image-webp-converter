@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import queue
 import threading
@@ -13,6 +14,8 @@ from converter import convert_images
 
 
 APP_TITLE = "Image to WebP Converter"
+SETTINGS_FILE = Path.home() / ".image_webp_converter.json"
+DEFAULT_INPUT_FOLDER = Path.home() / "Downloads" / "convert-images"
 
 
 class ImageConverterApp(ctk.CTk):
@@ -26,7 +29,7 @@ class ImageConverterApp(ctk.CTk):
         ctk.set_appearance_mode("System")
         ctk.set_default_color_theme("blue")
 
-        self.input_folder = tk.StringVar()
+        self.input_folder = tk.StringVar(value=self.load_default_input_folder())
         self.output_folder = tk.StringVar()
         self.use_output_folder_value = tk.BooleanVar(value=False)
         self.width_value = tk.StringVar(value="800")
@@ -40,7 +43,39 @@ class ImageConverterApp(ctk.CTk):
         self.stop_event = threading.Event()
 
         self._build_ui()
+        self.protocol("WM_DELETE_WINDOW", self.close_app)
         self.after(100, self._process_queue)
+
+    def load_default_input_folder(self) -> str:
+        try:
+            settings = json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
+            saved_folder = settings.get("input_folder")
+            if isinstance(saved_folder, str) and saved_folder.strip():
+                return saved_folder
+        except (OSError, json.JSONDecodeError):
+            pass
+
+        return str(DEFAULT_INPUT_FOLDER)
+
+    def save_default_input_folder(self) -> None:
+        folder = self.input_folder.get().strip()
+        if not folder:
+            return
+
+        try:
+            SETTINGS_FILE.write_text(
+                json.dumps({"input_folder": folder}, indent=2),
+                encoding="utf-8",
+            )
+        except OSError as exc:
+            messagebox.showwarning(
+                "Settings Not Saved",
+                f"Could not save the default input folder:\n{exc}",
+            )
+
+    def close_app(self) -> None:
+        self.save_default_input_folder()
+        self.destroy()
 
     def _build_ui(self) -> None:
         self.grid_columnconfigure(0, weight=1)
@@ -190,6 +225,7 @@ class ImageConverterApp(ctk.CTk):
         folder = filedialog.askdirectory(title="Select input folder")
         if folder:
             self.input_folder.set(folder)
+            self.save_default_input_folder()
 
     def toggle_output_folder(self) -> None:
         state = "normal" if self.use_output_folder_value.get() else "disabled"
@@ -252,6 +288,7 @@ class ImageConverterApp(ctk.CTk):
             return
 
         input_folder, output_folder, width, quality, suffix, workers = validated
+        self.save_default_input_folder()
 
         self.stop_event.clear()
         self.progress_bar.set(0)
