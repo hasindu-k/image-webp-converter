@@ -1,6 +1,6 @@
 # Image to WebP Converter Desktop App
 
-A simple Windows desktop app to convert JPG, JPEG, and PNG images into WebP format.
+A simple desktop app for Windows and Ubuntu/Linux to convert JPG, JPEG, and PNG images into WebP format.
 
 ## Features
 
@@ -27,7 +27,7 @@ image_webp_converter_desktop/
 └── README.md
 ```
 
-## Setup
+## Setup on Windows
 
 Create a virtual environment:
 
@@ -41,28 +41,46 @@ Activate it on Windows:
 venv\Scripts\activate
 ```
 
-### Ubuntu/Linux Tkinter Dependency
+Install dependencies and run the app:
 
-Tkinter is part of Python's standard GUI bindings, but on Ubuntu/Linux it is
-usually provided as a separate system package. It is not installed with `pip`.
+```bash
+python -m pip install -r requirements.txt
+python app.py
+```
 
-If you are using Python 3.14, install Tkinter with:
+## Setup on Ubuntu/Linux
+
+Install Python, the virtual-environment tools, and Tkinter:
 
 ```bash
 sudo apt update
-sudo apt install python3-tk
+sudo apt install python3 python3-venv python3-tk
 ```
 
-Install dependencies:
+Clone or download this project, then create and activate a virtual environment:
 
 ```bash
-pip install -r requirements.txt
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-Run the app:
+Install the Python dependencies:
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+Start the application:
 
 ```bash
 python app.py
+```
+
+To leave the virtual environment when you are finished, run:
+
+```bash
+deactivate
 ```
 
 By default, converted images are saved alongside the source images in the input
@@ -73,7 +91,7 @@ The initial input folder is `~/Downloads/convert-images`. The app remembers the
 input folder when you browse, begin a conversion, or close the app, then restores
 it the next time the app starts.
 
-## Build EXE
+## Build a Windows EXE
 
 Run:
 
@@ -85,6 +103,20 @@ After building, check the `dist` folder.
 
 ```text
 dist/ImageWebPConverter.exe
+```
+
+## Build a Linux Executable
+
+On Ubuntu/Linux, with the virtual environment activated, run:
+
+```bash
+pyinstaller --onefile --windowed --name ImageWebPConverter app.py
+```
+
+The executable will be created at:
+
+```text
+dist/ImageWebPConverter
 ```
 
 ## Recommended Settings
